@@ -1,18 +1,19 @@
-name: tritonpath
+name: tritonplan
 
 services:
   postgres:
-    image: postgres:16-alpine
-    container_name: tritonpath-postgres
+    image: pgvector/pgvector:pg16
+    container_name: tritonplan-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-tritonpath}
-      POSTGRES_USER: ${POSTGRES_USER:-tritonpath}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tritonpath}
+      POSTGRES_DB: ${POSTGRES_DB:-tritonplan}
+      POSTGRES_USER: ${POSTGRES_USER:-tritonplan}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tritonplan}
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -24,10 +25,10 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: tritonpath-backend
+    container_name: tritonplan-backend
     restart: unless-stopped
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://tritonpath:tritonpath@postgres:5432/tritonpath}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://tritonplan:tritonplan@postgres:5432/tritonplan}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
@@ -46,7 +47,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: tritonpath-frontend
+    container_name: tritonplan-frontend
     restart: unless-stopped
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
